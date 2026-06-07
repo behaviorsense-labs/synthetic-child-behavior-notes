@@ -1,9 +1,10 @@
 import csv
 from collections import Counter
 from pathlib import Path
+import re
 
 DATA_FILE = Path("data/synthetic_child_behavior_notes_v1_300.csv")
-REPORT_FILE = Path("validation/validation_report_v1.md")
+REPORT_FILE = Path("validation/validation_report_100rows.md")
 
 required_columns = [
     "id",
@@ -35,7 +36,22 @@ valid_difficulty_levels = {"easy", "medium", "complex"}
 valid_ambiguity_levels = {"low", "medium", "high"}
 valid_yes_no = {"yes", "no"}
 
-pii_words = ["@", "email", "address", "street", "ssn", "social security"]
+pii_words = [
+    "email",
+    "address",
+    "street",
+    "ssn",
+    "social security",
+    "date of birth",
+    "dob",
+    "full name",
+    "school name",
+    "clinic name",
+]
+
+email_pattern = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+phone_number_pattern = re.compile(r"(\+?\d[\d\s\-\(\)]{7,}\d)")
+dob_pattern = re.compile(r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b")
 
 def main():
     errors = []
@@ -92,6 +108,15 @@ def main():
             row.get("behavior", ""),
             row.get("caregiver_response", ""),
         ]).lower()
+
+        if email_pattern.search(text_to_check):
+            errors.append(f"Row {row_id}: possible email address found")
+
+        if phone_number_pattern.search(text_to_check):
+            errors.append(f"Row {row_id}: possible phone number found")
+
+        if dob_pattern.search(text_to_check):
+            errors.append(f"Row {row_id}: possible date found")
 
         for word in pii_words:
             if word in text_to_check:
