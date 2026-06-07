@@ -35,7 +35,7 @@ valid_difficulty_levels = {"easy", "medium", "complex"}
 valid_ambiguity_levels = {"low", "medium", "high"}
 valid_yes_no = {"yes", "no"}
 
-pii_words = ["phone", "email", "@", "address", "street", "ssn", "social security"]
+pii_words = ["@", "email", "address", "street", "ssn", "social security"]
 
 def main():
     errors = []

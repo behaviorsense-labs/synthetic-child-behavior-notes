@@ -2,7 +2,7 @@
 
 Total rows checked: 100
 
-Total errors found: 2
+Total errors found: 0
 
 ## Category Counts
 
@@ -32,5 +32,4 @@ Total errors found: 2
 
 ## Errors
 
-- Row 5: possible privacy issue word found: phone
-- Row 16: possible privacy issue word found: phone
+- No errors found.
