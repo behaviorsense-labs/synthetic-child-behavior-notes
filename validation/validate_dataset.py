@@ -128,7 +128,7 @@ def main():
     ambiguity_counts = Counter(row.get("ambiguity_level", "") for row in rows)
 
     report = []
-    report.append("# Validation Report - v1\n")
+    report.append("# Validation Report - v1 300 Rows\n")
     report.append(f"Total rows checked: {len(rows)}\n")
     report.append(f"Total errors found: {len(errors)}\n")
 
