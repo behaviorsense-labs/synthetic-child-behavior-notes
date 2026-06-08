@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 DATA_FILE = Path("data/synthetic_child_behavior_notes_v1_300.csv")
-REPORT_FILE = Path("validation/validation_report_100rows.md")
+REPORT_FILE = Path("validation/validation_report_300rows.md")
 
 required_columns = [
     "id",
