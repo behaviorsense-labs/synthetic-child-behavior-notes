@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 DATA_FILE = Path("data/synthetic_child_behavior_notes_v1_300.csv")
-REPORT_FILE = Path("validation/validation_report_100rows.md")
+REPORT_FILE = Path("validation/validation_report_300rows.md")
 
 required_columns = [
     "id",
@@ -128,7 +128,7 @@ def main():
     ambiguity_counts = Counter(row.get("ambiguity_level", "") for row in rows)
 
     report = []
-    report.append("# Validation Report - v1\n")
+    report.append("# Validation Report - v1 300 Rows\n")
     report.append(f"Total rows checked: {len(rows)}\n")
     report.append(f"Total errors found: {len(errors)}\n")
 
