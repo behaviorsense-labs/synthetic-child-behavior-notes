@@ -20,7 +20,7 @@ valid_ambiguity_levels = {"low", "medium", "high"}
 valid_yes_no = {"yes", "no"}
 
 privacy_words = [
-    "email", "address", "street", "ssn", "social security",
+    "email", "address",  "ssn", "social security",
     "date of birth", "dob", "full name", "school name", "clinic name"
 ]
 
