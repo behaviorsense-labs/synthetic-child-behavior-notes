@@ -151,7 +151,7 @@ def run_ai_review(client: OpenAI, df: pd.DataFrame) -> str:
     # Sample 2 rows per category
     sampled = (
         df.groupby("category", group_keys=False)
-          .apply(lambda g: g.sample(min(2, len(g)), random_state=42))
+          .apply(lambda g: g.sample(min(5, len(g)), random_state=42))
           .reset_index(drop=True)
     )
 
@@ -231,7 +231,7 @@ Source file: `{csv_file}`
 
 ---
 
-## AI Quality Review (sample of 2 rows per category)
+## AI Quality Review (sample of 5 rows per category)
 
 {ai_result}
 """
