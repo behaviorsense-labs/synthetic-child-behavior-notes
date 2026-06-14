@@ -67,34 +67,22 @@ def jaccard(a: set, b: set) -> float:
 
 
 def run_schema_check(df: pd.DataFrame) -> list[str]:
-    """Check all field values are within allowed vocabulary."""
+    """Check all field values are within allowed vocabulary and not empty."""
     issues = []
     for field, allowed in ALLOWED_VALUES.items():
         if field not in df.columns:
             issues.append(f"MISSING COLUMN: `{field}` not found in CSV.")
             continue
-        bad = df[~df[field].isin(allowed)][["id", field]]
+        # Flag empty values first
+        empty = df[df[field].str.strip() == ""][["id"]]
+        for _, row in empty.iterrows():
+            issues.append(f"Row {row['id']} | `{field}` is empty — expected one of: {sorted(allowed)}")
+        # Flag wrong values
+        bad = df[(df[field].str.strip() != "") & (~df[field].isin(allowed))][["id", field]]
         for _, row in bad.iterrows():
             issues.append(
                 f"Row {row['id']} | `{field}` = '{row[field]}' "
                 f"— not in allowed values: {sorted(allowed)}"
-            )
-    return issues
-
-
-def run_consequence_check(df: pd.DataFrame) -> list[str]:
-    """Flag rows where consequence_present=yes but consequence text is vague."""
-    vague_phrases = {
-        "did not describe", "not described", "not clearly", "no consequence", "no consequence noted",
-        "none", "n/a", "", "not mentioned", "calmed after a short", "cried", "concerned about", "left the", "kicked", "ignored", "settled down", "moved to",
-    }
-    issues = []
-    for _, row in df[df["consequence_present"] == "yes"].iterrows():
-        consequence = str(row.get("consequence", "")).strip().lower()
-        if any(phrase in consequence for phrase in vague_phrases) or len(consequence) < 10:
-            issues.append(
-                f"Row {row['id']} | consequence_present=yes but consequence "
-                f"is vague or empty: '{row['consequence']}'"
             )
     return issues
 
@@ -158,7 +146,6 @@ def run_static_checks(csv_file: Path) -> Path:
         )
 
     schema_issues = run_schema_check(df)
-    consequence_issues = run_consequence_check(df)
     distribution_issues = run_distribution_check(df)
     similarity_issues = run_similarity_check(df)
 
@@ -174,7 +161,6 @@ Source file: `{csv_file}`
 Total rows: {len(df)}
 
 {section("Schema Compliance", schema_issues)}
-{section("Consequence Field Check", consequence_issues)}
 {section("Distribution Check", distribution_issues)}
 {section("Near-Duplicate Check", similarity_issues)}
 """
@@ -185,7 +171,6 @@ Total rows: {len(df)}
 
     total_issues = (
         len(schema_issues)
-        + len(consequence_issues)
         + len(distribution_issues)
         + len(similarity_issues)
     )

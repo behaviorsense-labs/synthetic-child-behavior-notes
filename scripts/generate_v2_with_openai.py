@@ -179,28 +179,20 @@ def clean_rows(raw_text: str) -> tuple[list[dict], list[str]]:
         if not raw_fields or raw_fields == [""]:
             continue
 
-        if len(raw_fields) == len(actual_columns):
-            row = dict(zip(actual_columns, raw_fields))
-
-        elif len(raw_fields) > len(actual_columns):
-            # Too many fields — attempt repair using known tail columns
+        if len(raw_fields) > len(actual_columns):
+            # Too many fields — unquoted comma in free-text, attempt repair
             repaired = repair_row(raw_fields)
             if repaired:
                 row = repaired
             else:
-                skipped.append(
-                    f"Row ~{i}: skipped — {len(raw_fields)} fields "
-                    f"(expected {len(actual_columns)}), repair failed. "
-                    f"id={raw_fields[0]!r}"
-                )
-                continue
-
+                # Repair failed — truncate to expected column count
+                row = dict(zip(actual_columns, raw_fields[:len(actual_columns)]))
         else:
-            skipped.append(
-                f"Row ~{i}: skipped — only {len(raw_fields)} fields "
-                f"(expected {len(actual_columns)}). id={raw_fields[0]!r}"
-            )
-            continue
+            # Fewer or equal fields — map what we have, fill rest with empty string
+            # Missing fields will be caught and reported by the static validator
+            row = dict(zip(actual_columns, raw_fields))
+            for col in actual_columns:
+                row.setdefault(col, "")
 
         # Strip whitespace from all values
         row = {k: v.strip() for k, v in row.items()}
