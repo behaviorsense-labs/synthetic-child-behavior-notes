@@ -92,6 +92,11 @@ Step 5 — Final Validation
 
 Step 6 — LLM-as-Judge Evaluation
   └── 300 sampled rows (20/category) evaluated across quality, diversity, usefulness
+
+Step 7 — Human Validation (sample review)
+  └── Manually reviewed a stratified sample using a structured checklist
+      covering row-level quality, schema compliance, and field consistency
+      Checklist: prompts/04_manual_review_checklist.md
 ```
 
 All prompts are in `prompts/` and all scripts are in `scripts/`.
