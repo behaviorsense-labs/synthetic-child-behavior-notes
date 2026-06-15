@@ -1,6 +1,9 @@
 # Manual Review Checklist
 
-Use this checklist when reviewing dataset rows before release.
+> This checklist is used for manual sample review of the final dataset.
+> A stratified sample was selected for human review — not all rows are manually reviewed.
+> AI-assisted review and static checks cover the full dataset (see `scripts/review_final_dataset.py`).
+> For LLM-as-Judge evaluation of 300 sampled rows, see `scripts/llm_judge.py`.
 
 ## Row-Level Review
 
@@ -21,26 +24,26 @@ For each row, confirm:
 - [ ] `suggested_followup_question` is parent-friendly
 - [ ] `difficulty_level` is reasonable for the scenario
 - [ ] `ambiguity_level` is reasonable for the scenario
-- [ ] `risk_level` is appropriate — `high` only if the caregiver described strong safety concern in that moment (e.g. child ran away in a crowded place, refused to stay near caregiver) — no injury descriptions or clinical framing
+- [ ] `risk_level` is appropriate — `high` only if the caregiver described a strong safety concern in that moment (e.g. child ran away in a crowded place, refused to stay near caregiver) — no injury descriptions or clinical framing
 - [ ] Row does not sound copied from a public source
 - [ ] Row is not a near-duplicate of another row
 
 ## Schema Compliance Check
 
-- [ ] `dataset_version` = `v2`
+- [ ] `dataset_version` is `v1` or `v2`
 - [ ] `age_group` is one of: `3-5`, `6-8`, `9-12`
-- [ ] `setting` is one of: `home`, `school-classroom`, `school-playground`, `public-store`, `public-restaurant`, `public-transport`, `outdoor`, `daycare`, `relative-home`, `other-public`
+- [ ] `setting` is one of: `home`, `school-classroom`, `school-playground`, `public-store`, `public-restaurant`, `public-transport`, `outdoor`, `daycare`, `relative-home`, `other-public` (v1 rows may use freeform settings — acceptable)
 - [ ] `consequence_present` is `yes` or `no`
 - [ ] `risk_level` is one of: `low`, `moderate`, `high`
 - [ ] `difficulty_level` is one of: `easy`, `medium`, `complex`
 - [ ] `ambiguity_level` is one of: `low`, `medium`, `high`
 - [ ] `split` is one of: `train`, `validation`, `test`
 - [ ] `synthetic_flag` = `yes`
-- [ ] `review_status` = `draft`
+- [ ] `review_status` = `reviewed` for human-validated rows, `draft` for unreviewed rows
 
-## Batch-Level Distribution Check
+## Dataset-Level Distribution Check
 
-After reviewing all rows in a batch, verify approximate distributions:
+After reviewing your sample, verify approximate distributions against targets:
 
 | Field | Target | Actual |
 |---|---|---|
@@ -61,16 +64,25 @@ After reviewing all rows in a batch, verify approximate distributions:
 | split: validation | ~15% | |
 | split: test | ~25% | |
 
-## Batch Notes
+> Note: v1 rows (300) were generated before schema formalization and may show wider distribution variance. v2 rows (396) follow controlled vocabulary and distribution targets more closely.
+
+## Sample Review Notes
 
 ```
-Batch name:
-Category:
-Row ID range:
+Review date:
+Reviewer:
+Sample size:
+Sample method: stratified / random / manual selection
+Row ID range or categories covered:
+
 Rows reviewed:
+Rows with issues found:
 Rows corrected:
 Rows removed:
+
 Main issues found:
 Distribution concerns:
-Status: draft / reviewed / approved
+Notes for paper:
+
+Status: draft / in-progress / complete
 ```
