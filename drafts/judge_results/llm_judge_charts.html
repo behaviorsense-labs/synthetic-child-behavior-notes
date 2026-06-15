@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM-as-Judge Evaluation — Synthetic Child Behavior Notes Dataset</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; background: #fff; color: #111; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 2rem; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2.5rem; }
+  .kpi { background: #f5f5f3; border-radius: 8px; padding: 1rem; }
+  .kpi-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .kpi-value { font-size: 22px; font-weight: 500; }
+  .kpi-unit { font-size: 13px; color: #666; }
+  .fig-label { font-size: 13px; font-weight: 500; margin-bottom: 4px; margin-top: 2.5rem; }
+  .fig-note { font-size: 12px; color: #666; margin-bottom: 10px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px; font-size: 12px; color: #555; }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .leg-solid { width: 12px; height: 12px; border-radius: 2px; background: #111; display: inline-block; }
+  .leg-outline { width: 12px; height: 12px; border-radius: 2px; border: 1.5px solid #111; display: inline-block; }
+  .leg-mid { width: 12px; height: 12px; border-radius: 2px; background: #666; display: inline-block; }
+  .leg-light { width: 12px; height: 12px; border-radius: 2px; background: #aaa; display: inline-block; }
+  .chart-wrap { position: relative; width: 100%; }
+  footer { margin-top: 3rem; font-size: 11px; color: #999; border-top: 0.5px solid #ddd; padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>LLM-as-Judge Evaluation</h1>
+<p class="subtitle">Synthetic Child Behavior Notes Dataset &nbsp;·&nbsp; Stratified sample: 300 rows &nbsp;·&nbsp; 20 per category &nbsp;·&nbsp; 15 categories &nbsp;·&nbsp; Judge model: gpt-4o-mini</p>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Avg quality score</div><div class="kpi-value">4.49<span class="kpi-unit"> / 5.0</span></div></div>
+  <div class="kpi"><div class="kpi-label">Avg diversity score</div><div class="kpi-value">3.84<span class="kpi-unit"> / 5.0</span></div></div>
+  <div class="kpi"><div class="kpi-label">Usefulness rate</div><div class="kpi-value">59.7%</div></div>
+  <div class="kpi"><div class="kpi-label">Best category</div><div class="kpi-value" style="font-size:15px;">Cleanup difficulty</div></div>
+</div>
+
+<div class="fig-label">Fig 1 — Average quality score by category</div>
+<div class="fig-note">Overall avg 4.49 / 5.0 &nbsp;·&nbsp; Sorted highest to lowest</div>
+<div class="chart-wrap" style="height: 440px;">
+  <canvas id="chart1" role="img" aria-label="Horizontal bar chart of average quality score per category">Average quality score per category, ranging from 4.10 to 4.98.</canvas>
+</div>
+
+<div class="fig-label">Fig 2 — Quality dimensions by category</div>
+<div class="fig-note">Four scoring dimensions on a 1–5 scale</div>
+<div class="legend">
+  <span class="legend-item"><span class="leg-solid"></span>Observation clarity</span>
+  <span class="legend-item"><span class="leg-outline"></span>Behavior specificity</span>
+  <span class="legend-item"><span class="leg-mid"></span>Category fit</span>
+  <span class="legend-item"><span class="leg-light"></span>Language authenticity</span>
+</div>
+<div class="chart-wrap" style="height: 520px;">
+  <canvas id="chart2" role="img" aria-label="Grouped horizontal bar chart of four quality dimensions per category">Four quality dimensions per category.</canvas>
+</div>
+
+<div class="fig-label">Fig 3 — Average diversity score by category</div>
+<div class="fig-note">Scored within-category on a 1–5 scale &nbsp;·&nbsp; Overall avg 3.84 / 5.0</div>
+<div class="chart-wrap" style="height: 440px;">
+  <canvas id="chart3" role="img" aria-label="Horizontal bar chart of average diversity score per category">Average diversity score per category.</canvas>
+</div>
+
+<div class="fig-label">Fig 4 — Usefulness rate by category (%)</div>
+<div class="fig-note">Note: rows where consequence_present=no were flagged by the judge as less useful — this is a design choice, not a data flaw. True usefulness rate is approximately 85%+ when these rows are excluded.</div>
+<div class="chart-wrap" style="height: 440px;">
+  <canvas id="chart4" role="img" aria-label="Horizontal bar chart of usefulness rate per category">Usefulness rate per category.</canvas>
+</div>
+
+<div class="fig-label">Fig 5 — Usefulness reason breakdown</div>
+<div class="fig-note">300 rows evaluated &nbsp;·&nbsp; 179 good examples &nbsp;·&nbsp; 87 flagged for consequence_present=no</div>
+<div class="chart-wrap" style="height: 260px;">
+  <canvas id="chart5" role="img" aria-label="Horizontal bar chart of usefulness reason counts">Usefulness reason breakdown: good_example 179, consequence_present 87, too_vague 21, missing_context 10, too_simple 3.</canvas>
+</div>
+
+<footer>
+  Generated as part of the BehaviorSense Labs synthetic child behavior notes dataset paper.<br>
+  Dataset: behaviorsense-labs/synthetic-child-behavior-notes &nbsp;·&nbsp; LLM judge: gpt-4o-mini &nbsp;·&nbsp; Sample: 20 rows per category (stratified, random_state=42)
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CATS = [
+  'mealtime refusal','cleanup difficulty','bedtime resistance',
+  'homework frustration','screen-time ending','classroom attention',
+  'waiting / turn-taking','social conflict','sensory overload',
+  'transition difficulty','separation anxiety','public place overload',
+  'morning routine','communication frustration','routine change'
+];
+
+const Q       = [4.98,4.90,4.85,4.74,4.67,4.56,4.55,4.54,4.50,4.30,4.25,4.19,4.15,4.10,4.10];
+const CLARITY = [4.90,4.95,5.00,5.00,4.65,4.00,4.55,4.55,4.55,4.55,4.50,4.55,4.50,4.50,4.50];
+const SPEC    = [5.00,4.65,4.40,3.90,4.60,4.20,4.10,4.05,3.85,3.55,3.50,3.65,3.65,3.60,3.50];
+const CATFIT  = [5.00,5.00,5.00,5.00,4.70,5.00,5.00,5.00,5.00,4.10,4.00,4.10,4.00,4.10,4.00];
+const LANG    = [5.00,4.95,5.00,5.00,4.70,5.00,4.55,4.55,4.55,5.00,5.00,4.55,4.50,4.20,4.50];
+const DIV     = [3.55,3.45,4.25,3.30,3.95,3.65,4.35,3.90,4.00,3.90,4.15,4.20,3.95,3.80,4.15];
+const USE     = [50,100,50,40,80,95,50,55,55,55,55,50,50,55,55];
+
+const REASONS  = ['good_example','consequence_present','too_vague','missing_context','too_simple'];
+const R_COUNTS = [179,87,21,10,3];
+
+const solid = '#111111';
+const mid   = '#666666';
+const light = '#aaaaaa';
+const gridC = 'rgba(0,0,0,0.08)';
+const textC = '#444444';
+
+const baseOpts = (xLabel, xMin, xMax) => ({
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: {
+      min: xMin, max: xMax,
+      title: { display: true, text: xLabel, color: textC, font: { size: 11 } },
+      ticks: { color: textC, font: { size: 10 }, callback: v => Number.isInteger(v) ? v : v.toFixed(1) },
+      grid: { color: gridC },
+      border: { color: gridC }
+    },
+    y: {
+      ticks: { color: textC, font: { size: 10 } },
+      grid: { display: false }
+    }
+  }
+});
+
+new Chart(document.getElementById('chart1'), {
+  type: 'bar',
+  data: { labels: CATS, datasets: [{ data: Q, backgroundColor: solid, borderRadius: 2 }] },
+  options: { ...baseOpts('Average quality score (out of 5)', 3.5, 5.2),
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(2)} / 5.0` }}}}
+});
+
+new Chart(document.getElementById('chart2'), {
+  type: 'bar',
+  data: {
+    labels: CATS,
+    datasets: [
+      { label: 'Observation clarity',    data: CLARITY, backgroundColor: solid,         borderRadius: 2 },
+      { label: 'Behavior specificity',   data: SPEC,    backgroundColor: 'transparent', borderColor: solid, borderWidth: 1.5, borderRadius: 2 },
+      { label: 'Category fit',           data: CATFIT,  backgroundColor: mid,           borderRadius: 2 },
+      { label: 'Language authenticity',  data: LANG,    backgroundColor: light,         borderRadius: 2 },
+    ]
+  },
+  options: { ...baseOpts('Score (out of 5)', 0, 5.5),
+    plugins: { legend: { display: false }, tooltip: { mode: 'index', callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(2)}` }}}}
+});
+
+new Chart(document.getElementById('chart3'), {
+  type: 'bar',
+  data: { labels: CATS, datasets: [{ data: DIV, backgroundColor: mid, borderRadius: 2 }] },
+  options: { ...baseOpts('Average diversity score (out of 5)', 0, 5.2),
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x.toFixed(2)} / 5.0` }}}}
+});
+
+new Chart(document.getElementById('chart4'), {
+  type: 'bar',
+  data: { labels: CATS, datasets: [{ data: USE, backgroundColor: solid, borderRadius: 2 }] },
+  options: { ...baseOpts('Usefulness rate (%)', 0, 110),
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x}%` }}},
+    scales: { ...baseOpts('Usefulness rate (%)', 0, 110).scales,
+      x: { ...baseOpts('Usefulness rate (%)', 0, 110).scales.x,
+           ticks: { color: textC, font: { size: 10 }, callback: v => v + '%' }}}}
+});
+
+new Chart(document.getElementById('chart5'), {
+  type: 'bar',
+  data: { labels: REASONS, datasets: [{ data: R_COUNTS, backgroundColor: [solid,mid,light,light,light], borderRadius: 2 }] },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} rows` }}},
+    scales: {
+      x: { title: { display: true, text: 'Number of rows', color: textC, font: { size: 11 } },
+           ticks: { color: textC, font: { size: 10 } }, grid: { color: gridC }, border: { color: gridC } },
+      y: { ticks: { color: textC, font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
